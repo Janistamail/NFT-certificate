@@ -4,7 +4,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 contract MyNFT is Ownable, ERC721URIStorage {
     address public admin;
-    constructor() ERC721("Learn2develop.net NFT", "DLS") {
+    constructor() ERC721("NFTCertificate", "NFT_cert") {
         admin = msg.sender;
     }
 

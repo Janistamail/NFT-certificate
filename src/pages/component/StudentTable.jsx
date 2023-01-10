@@ -2,7 +2,7 @@ import { EditIcon } from '@chakra-ui/icons';
 import { Button, FormControl, FormLabel, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Table, TableCaption, TableContainer, Tbody, Td, Text, Th, Thead, Tr, useDisclosure, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
-import { StudentContext } from '../index';
+import { StudentContext } from '../_app';
 
 
 const StudentTable = () => {
@@ -55,7 +55,7 @@ const StudentTable = () => {
                 </ModalContent>
             </Modal>
 
-            <Text fontSize='4xl' color={'teal'} fontWeight="bold" >
+            <Text fontSize='2xl' color={'teal.400'} fontWeight="bold" >
                 Students who graduated and will receive graduation certificate in 2000
             </Text>
             <TableContainer>
@@ -99,7 +99,7 @@ const StudentTable = () => {
                                 <Td>{student.name}</Td>
                                 <Td>{student.lastname}</Td>
                                 <Td>
-                                    ...
+                                    {(student?.url) ?? '-'}
                                 </Td>
                                 <Td>
                                     {/* <Button onClick={ }>

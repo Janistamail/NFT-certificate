@@ -1,43 +1,26 @@
-import { AlertDialog, AlertDialogContent, AlertDialogOverlay, Box, Button, Flex, HStack, Text, VStack } from '@chakra-ui/react';
+import { AlertDialog, AlertDialogContent, AlertDialogOverlay, Button, HStack, Text, VStack } from '@chakra-ui/react';
+import detectEthereumProvider from '@metamask/detect-provider';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { createContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Web3 from "web3";
-import { STUDENT } from '../../constants/students';
-import detectEthereumProvider from "@metamask/detect-provider";
 import MyNFT from '../abis/MyNFT.json';
 import StudentTable from './component/StudentTable';
-import Image from 'next/image';
-import Successful from './component/Successful';
+import { StudentContext } from './_app';
 
-export const StudentContext = createContext();
 
 export default function Home() {
+	const { students, setStudents } = useContext(StudentContext);
 	const router = useRouter();
 	const [accounts, setAccounts] = useState([]);
 	const [nftContract, setNFTContract] = useState();
-	const [students, setStudents] = useState(STUDENT);
 	const [isLoading, setIsLoading] = useState(false);
 	const [owner, setOwner] = useState();
-	const [ownerBalance, setOwnerBalance] = useState(2);
-
-	// async function mintFunc() {
-	// 	const balance = await contract.methods.balanceOf('0x1547BFD6f1f9e7CDA81306660fE6420845625Ef5').call();
-	// 	setOwnerBalance(balance);
-
-	// 	// students.map(async student => {
-	// 	// 	await contract.methods.mint(student.account, student.tokenId, student.account);
-	// 	// });
-	// 	// const estGas = await contract.methods.balanceOf.estimateGas(owner, { from: owner });
-	// 	// const sendingGas = Math.ceil(estGas * 1.5);
-	// 	// console.log(sendingGas);
-	// 	// console.log(await contract.methods.balanceOf(owner));
-	// 	// setOwnerBalance(await contract.methods.balanceOf(owner, {}));
-
-	// }
+	const [ownerBalance, setOwnerBalance] = useState();
 
 	const loadWeb3 = async () => {
-		// const provider = await detectEthereumProvider();
-		const provider = 'http://localhost:7545';
+		const provider = await detectEthereumProvider();
+		// const provider = 'http://localhost:7545';
 
 		if (provider) {
 			console.log('ethereum wallet is connected')
@@ -53,9 +36,8 @@ export default function Home() {
 		const accounts = await web3.eth.getAccounts();
 		setAccounts(accounts);
 
-		//is set to blockchain network id 
-		const networkId = await web3.eth.net.getId()
-		const networkData = MyNFT.networks[networkId]
+		const networkId = await web3.eth.net.getId();
+		const networkData = MyNFT.networks[networkId];
 
 		if (networkData) {
 
@@ -65,43 +47,27 @@ export default function Home() {
 			//use web3 to create contract and interact with smart contracts
 			const contract = new web3.eth.Contract(abi, address);
 			// await setNFTContract({ contract });
-			const admin = await contract.methods.admin().call();
-			setOwner(admin);
-			// const balance = await contract.methods.balanceOf(admin).call();
-			const balance = await contract.methods.balanceOf(admin, { from: admin });
+			const ownerData = await contract.methods.admin().call();
+			console.log(ownerData);
+			setOwner(ownerData);
 
-			// setOwnerBalance(balance.toString());
-			console.log("balance", balance);
-			await contract.methods.mint('0x1Cb4F53B5e525Fe6fdb717f0105bAc865d5cf86D', 1,);
-
-
-			// const balance =
-			// 	await contract.methods.balanceOf(admin).call(function (err, res) {
-			// 		if (err) {
-			// 			console.log("An error occured", err)
-			// 			return
-			// 		}
-			// 		console.log(`The balance is: ${res}`)
-			// 	})
-			// setOwnerBalance(balance)
-			// await contract.methods.mint(student.account, student.tokenId, student.account);
-
-			// const totalSupply = await contract.methods.mint(student.account, student.tokenId, student.account).call();
-			// console.log(totalSupply);
-
-			// this.setState({ totalSupply })
-			// // set up an array to keep track of tokens 
-			// // load KryptoBirdz
-			// for (let i = 1; i <= totalSupply; i++) {
-			// 	const KryptoBird = await contract.methods.kryptoBirdz(i - 1).call()
-			// 	// how should we handle the state on the front end? 
-			// 	this.setState({
-			// 		kryptoBirdz: [...this.state.kryptoBirdz, KryptoBird]
-			// 	})
-			// }
 		} else {
 			window.alert('Smart contract not deployed')
 		}
+	}
+
+	const mintFunc = async () => {
+		const networkId = await web3.eth.net.getId()
+		const networkData = MyNFT.networks[networkId]
+		const abi = MyNFT.abi;
+		const address = networkData.address;
+		const contract = new web3.eth.Contract(abi, address);
+		await contract.methods.mint(owner, 3, students[3].url).send({ from: owner, gas: '1000000' });
+
+		// const balance = await contract.methods.balanceOf(owner, { from: owner }).call();
+		// console.log("balance", balance);
+		// setOwnerBalance(balance.toString());
+
 	}
 
 	useEffect(() => {
@@ -112,27 +78,31 @@ export default function Home() {
 		init();
 
 	}, []);
+	console.log(students, owner);
+
 
 
 	return (
-		<StudentContext.Provider value={{ students, setStudents }} >
+		<div>
 			<AlertDialog
 				isOpen={isLoading}
 				isCentered
 			>
 				<AlertDialogOverlay>
+					console.log(students);
 					<AlertDialogContent>
-						<Image src={'/loading.gif'} width={600} height={600}></Image>
+						<Image src={'/loading.gif'} width={600} height={600} alt='loadingGif'></Image>
 					</AlertDialogContent>
 				</AlertDialogOverlay>
 			</AlertDialog>
-			<VStack w='100%' h={20} bgColor='teal.200' p={3} alignItems='end'>
-				<Text fontSize={'lg'} fontWeight='bold'>Admin : {owner}</Text>
-				<Text fontSize={'md'} >Balance : {ownerBalance}</Text>
+			<HStack w='100%' h={20} bgColor='teal.200' p={3} justifyContent='space-between'>
+				<Text fontSize={'2xl'} fontWeight='bold' color={'teal'}>NFT certificates</Text>
 
-			</VStack>
+				<Text fontSize={'sm'} fontWeight='bold' color={'teal'}>owner : {owner}</Text>
+				{/* <Text fontSize={'md'} >Balance : {ownerBalance}</Text> */}
+
+			</HStack>
 			<StudentTable />
-			<Text>The number of admin's NFT :  </Text>
 			<HStack gap={10} justifyContent='center'>
 				<Button colorScheme='teal' size='lg' onClick={() => {
 					setIsLoading(true)
@@ -140,8 +110,8 @@ export default function Home() {
 				}} >upload to IPFS</Button>
 				<Button colorScheme='teal' size='lg' onClick={() => mintFunc()}>Mint NFTs</Button>
 			</HStack>
-			<Successful />
-		</StudentContext.Provider>
+		</div>
+
 
 	);
 }
