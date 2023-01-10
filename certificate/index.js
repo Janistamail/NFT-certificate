@@ -6,7 +6,7 @@ async function generateImage() {
     STUDENT.forEach(async student => {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        await page.goto(`http://localhost:3000/student/${student.id}`, {
+        await page.astgoto(`http://localhost:3000/student/${student.id}`, {
             waitUntil: "networkidle0"
         });
         await page.setViewport({ width: 1020, height: 715 });
