@@ -7,12 +7,14 @@ import detectEthereumProvider from "@metamask/detect-provider";
 import MyNFT from '../abis/MyNFT.json';
 import StudentTable from './component/StudentTable';
 import Image from 'next/image';
+import Successful from './component/Successful';
 
 export const StudentContext = createContext();
+
 export default function Home() {
 	const router = useRouter();
 	const [accounts, setAccounts] = useState([]);
-	const [contract, setContract] = useState();
+	const [nftContract, setNFTContract] = useState();
 	const [students, setStudents] = useState(STUDENT);
 	const [isLoading, setIsLoading] = useState(false);
 	const [owner, setOwner] = useState();
@@ -62,9 +64,17 @@ export default function Home() {
 			const address = networkData.address;
 			//use web3 to create contract and interact with smart contracts
 			const contract = new web3.eth.Contract(abi, address);
-			setContract(contract);
+			// await setNFTContract({ contract });
 			const admin = await contract.methods.admin().call();
 			setOwner(admin);
+			// const balance = await contract.methods.balanceOf(admin).call();
+			const balance = await contract.methods.balanceOf(admin, { from: admin });
+
+			// setOwnerBalance(balance.toString());
+			console.log("balance", balance);
+			await contract.methods.mint('0x1Cb4F53B5e525Fe6fdb717f0105bAc865d5cf86D', 1,);
+
+
 			// const balance =
 			// 	await contract.methods.balanceOf(admin).call(function (err, res) {
 			// 		if (err) {
@@ -130,6 +140,7 @@ export default function Home() {
 				}} >upload to IPFS</Button>
 				<Button colorScheme='teal' size='lg' onClick={() => mintFunc()}>Mint NFTs</Button>
 			</HStack>
+			<Successful />
 		</StudentContext.Provider>
 
 	);

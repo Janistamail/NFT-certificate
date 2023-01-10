@@ -1,18 +1,12 @@
-import { Button, Text, VStack } from '@chakra-ui/react';
 import { ThirdwebStorage } from "@thirdweb-dev/storage";
 import fs from 'fs';
-import { useRouter } from 'next/router';
+import Successful from './component/Successful';
 const storage = new ThirdwebStorage();
 
-export default function about() {
-    const router = useRouter();
+export default function about({ data }) {
+
     return (
-        <VStack mt={100}>
-            <Text fontSize='4xl' color={'teal'} fontWeight="bold" mb={10}>Successfully uploaded certificate files to IPFS</Text>
-            <Button colorScheme='teal' size='lg' onClick={() => {
-                router.push('/')
-            }} >Back to home</Button>
-        </VStack>
+        <Successful data={data} />
     );
 }
 
@@ -27,6 +21,7 @@ function createMetadata(name, imgUrl) {
 export async function getServerSideProps() {
     const imagesDir = './certificate/images';
     const files = fs.readdirSync(`${imagesDir}`);
+    const data = [];
 
     for (let file of files) {
         // (1) upload image to IPFS
@@ -43,9 +38,11 @@ export async function getServerSideProps() {
         const uploadMetadata = await storage.upload(fs.readFileSync(`${jsonDir}/${fileName}.json`));
         const metadataUrl = storage.resolveScheme(uploadMetadata)
         console.log(metadataUrl)
+
+        data.push({ id: fileName, url: metadataUrl })
     }
 
     return {
-        props: {},
+        props: { data },
     };
 } 
